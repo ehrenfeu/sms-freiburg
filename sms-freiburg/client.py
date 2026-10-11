@@ -109,11 +109,22 @@ class SMSFreiburgClient:
                          date, ordered, description)
         return result
 
-    def _get_displayed_dates(self):
-        table = browser.element("table.Table_Standard").locate()
-        header_cells = table.find_elements("xpath", "./tbody/tr[1]/td")
-        dates = [cell.text for cell in header_cells]
-        return dates
+    def _get_displayed_dates(self, max_attempts=5):
+        for attempt in range(max_attempts):
+            try:
+                table = browser.element("table.Table_Standard").locate()
+                header_cells = table.find_elements("xpath", "./tbody/tr[1]/td")
+                dates = [cell.text for cell in header_cells]
+                return dates
+
+            except (StaleElementReferenceException, NoSuchElementException):
+                if attempt == max_attempts - 1:
+                    logger.error("Could not extract the displayed dates within %d "
+                                 "attempts", max_attempts)
+                    raise
+
+            time.sleep(0.1)
+        raise RuntimeError("Could not switch to next week.")
 
     def _go_to_next_week(self) -> bool:
         old_dates = self._get_displayed_dates()

@@ -161,11 +161,8 @@ class SMSFreiburgClient:
         return True
 
     def _extract_meal_plan_for_week(self, max_attempts=10):
-        """
-        Retry the complete extraction if the portal replaces
-        the table while we are reading it.
-        """
-
+        # retry the complete extraction if the portal replaces the table while
+        # we are reading it:
         for attempt in range(max_attempts):
             try:
                 return self._extract_meal_plan()

@@ -11,6 +11,7 @@ from pathlib import Path
 
 from .client import SMSFreiburgClient, LoginError
 
+
 @dataclass
 class Config:
     user: str
@@ -29,7 +30,9 @@ def load_config(path: Path, profile=""):
             configs = yaml.safe_load(f)
     except FileNotFoundError:
         logger = logging.getLogger(__name__)
-        logger.info(f"Could not find config file at {path}, only using command line arguments.")
+        logger.info(
+            f"Could not find config file at {path}, only using command line arguments."
+        )
         return {}
 
     try:
@@ -51,26 +54,31 @@ def parse_configuration():
     parser.add_argument("--user", help="'Benutzername' on sms-freiburg")
     parser.add_argument("--password", help="Password on sms-freiburg")
     parser.add_argument("--mqtt_user", help="User for authentication at MQTT broker")
-    parser.add_argument("--mqtt_password", help="Password for authentication at MQTT broker")
+    parser.add_argument(
+        "--mqtt_password", help="Password for authentication at MQTT broker"
+    )
     parser.add_argument("--topic", help="MQTT topic for the message")
     parser.add_argument("--mqtt_ip", help="IP of the MQTT broker")
     parser.add_argument("--mqtt_port", help="Port of the MQTT broker")
     parser.add_argument("--profile", help="Profile from configuration file")
     parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
-    args= parser.parse_args()
-    
+    args = parser.parse_args()
+
     logging.basicConfig(
-            level=logging.DEBUG if args.verbose else logging.INFO,
-            format="%(levelname)s: %(message)s")
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
 
     # parse config file
     values = load_config(args.config, args.profile)
-    
+
     # combine command line arguments with values from configuration file
     # (command line overrides config file).
-    arg_vals = {key: value for key, value in vars(args).items()
-                if value is not None
-                and key not in {"config", "profile"}}
+    arg_vals = {
+        key: value
+        for key, value in vars(args).items()
+        if value is not None and key not in {"config", "profile"}
+    }
     values.update(arg_vals)
 
     # aim for clean error messages if something is missing:
@@ -78,8 +86,9 @@ def parse_configuration():
     missing = required - values.keys()
 
     if missing:
-        parser.error( "Missing required configuration values: " +
-                      ", ".join(sorted(missing)))
+        parser.error(
+            "Missing required configuration values: " + ", ".join(sorted(missing))
+        )
 
     return Config(**values)
 
@@ -109,15 +118,12 @@ def main():
         ],
     }
 
-
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     mqtt_client.username_pw_set(config.mqtt_user, config.mqtt_password)
     mqtt_client.connect(config.mqtt_ip, config.mqtt_port, 60)
 
     mqtt_client.publish(
-        config.topic,
-        json.dumps(result, ensure_ascii=False),
-        retain=True
+        config.topic, json.dumps(result, ensure_ascii=False), retain=True
     )
 
     mqtt_client.disconnect()

@@ -2,9 +2,7 @@
 name = "sms-freiburg"
 dynamic = ["version"]
 description = "extracts information from sms-freiburg.de and shares it via MQTT"
-authors = [
-    {name = "Gabi Röger"},
-]
+authors = [{ name = "Gabi Röger" }]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -14,10 +12,10 @@ classifiers = [
 license = "GPL-3.0-only"
 
 dependencies = [
-  "paho-mqtt==2.1.0",
-  "PyYAML==6.0.3",
-  "selene==2.0.0rc10",
-  "selenium==4.50.0"
+    "paho-mqtt==2.1.0",
+    "PyYAML==6.0.3",
+    "selene==2.0.0rc10",
+    "selenium==4.50.0",
 ]
 
 [project.urls]
@@ -25,7 +23,7 @@ Issues = "https://github.com/roeger/sms-freiburg/issues"
 Repository = "https://github.com/roeger/sms-freiburg"
 
 [tool.setuptools.dynamic]
-version = {file = "VERSION"}
+version = { file = "VERSION" }
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]

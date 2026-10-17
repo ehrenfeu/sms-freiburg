@@ -4,8 +4,10 @@ import time
 
 from selenium import webdriver
 from selene import browser, be
-from selenium.common.exceptions import (NoSuchElementException,
-                                        StaleElementReferenceException)
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 
 URL = "https://sms-freiburg.de"
 
@@ -23,8 +25,11 @@ class SMSFreiburgClient:
 
     def _clean_description(self, text: str) -> str:
         # remove allergy indicators
-        text = re.sub(r"\b(?:[A-Z]\d*|\d+)(?:,\s*(?:[A-Z]\d*|\d+))*\b,?", "",
-                      text,)
+        text = re.sub(
+            r"\b(?:[A-Z]\d*|\d+)(?:,\s*(?:[A-Z]\d*|\d+))*\b,?",
+            "",
+            text,
+        )
         # use a semicolon to separate different parts of the meal
         text = re.sub(r"(?:\r?\n){3}", "; ", text)
         # Normalize whitespaces
@@ -41,15 +46,15 @@ class SMSFreiburgClient:
 
         # Wait until the login either succeeded or produced an error.
         def login_finished(_):
-            return (speiseplan_link.matching(be.visible)
-                    or error_box.matching(be.visible))
+            return speiseplan_link.matching(be.visible) or error_box.matching(
+                be.visible
+            )
 
         browser.element("body").should(login_finished)
 
         if error_box.matching(be.visible):
             message = browser.element("#LoginErrorMsg").locate().text
-            logger.error("Login failed for %s: %s", username,
-                         " ".join(message.split()))
+            logger.error("Login failed for %s: %s", username, " ".join(message.split()))
             raise LoginError(f"Login failed for user {username}")
         logger.debug("Login successful")
 
@@ -63,7 +68,7 @@ class SMSFreiburgClient:
         rows = table.locate().find_elements("xpath", "./tbody/tr")
         if len(rows) < 2:
             logger.debug("No meal rows found, skipping week")
-            return result # no meals in this week (can happen during vacations)
+            return result  # no meals in this week (can happen during vacations)
 
         header_cells = rows[0].find_elements("xpath", "./td")
         food_cells = rows[1].find_elements("xpath", "./td")
@@ -81,9 +86,7 @@ class SMSFreiburgClient:
             date = match.group(1)
 
             # The food cell contains a nested table.
-            nested_rows = food_cell.find_elements(
-                "xpath", ".//table/tbody/tr"
-            )
+            nested_rows = food_cell.find_elements("xpath", ".//table/tbody/tr")
 
             if not nested_rows:
                 logger.debug("No meal entry for %s", date)
@@ -102,11 +105,13 @@ class SMSFreiburgClient:
                 if match:
                     ordered = int(match.group(1))
                 else:
-                    logger.warning("Could not parse order count for %s: %r",
-                                   date, ordered_text)
+                    logger.warning(
+                        "Could not parse order count for %s: %r", date, ordered_text
+                    )
             result[date] = [ordered, description]
-            logger.debug("Parsed %s: ordered=%d, description=%r",
-                         date, ordered, description)
+            logger.debug(
+                "Parsed %s: ordered=%d, description=%r", date, ordered, description
+            )
         return result
 
     def _get_displayed_dates(self, max_attempts=5):
@@ -119,8 +124,10 @@ class SMSFreiburgClient:
 
             except (StaleElementReferenceException, NoSuchElementException):
                 if attempt == max_attempts - 1:
-                    logger.error("Could not extract the displayed dates within %d "
-                                 "attempts", max_attempts)
+                    logger.error(
+                        "Could not extract the displayed dates within %d attempts",
+                        max_attempts,
+                    )
                     raise
 
             time.sleep(0.1)
@@ -129,9 +136,7 @@ class SMSFreiburgClient:
     def _go_to_next_week(self) -> bool:
         old_dates = self._get_displayed_dates()
 
-        next_button = browser.all(
-            'a:has(img[alt="Eine Woche vor"])'
-        )
+        next_button = browser.all('a:has(img[alt="Eine Woche vor"])')
         if len(next_button) == 0:
             logger.info("No 'next week' button; reached the last week")
             return False
@@ -165,8 +170,9 @@ class SMSFreiburgClient:
 
             except (StaleElementReferenceException, NoSuchElementException):
                 if attempt == max_attempts - 1:
-                    logger.error("Meal plan extraction failed after %d "
-                                 "attempts", max_attempts)
+                    logger.error(
+                        "Meal plan extraction failed after %d attempts", max_attempts
+                    )
                     raise
 
             time.sleep(0.1)

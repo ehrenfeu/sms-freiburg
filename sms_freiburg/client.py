@@ -149,6 +149,17 @@ class SMSFreiburgClient:
             try:
                 new_dates = self._get_displayed_dates()
 
+                # clicking the "next week" button sometimes takes a moment to update
+                # the contents, so if the new dates are the same as the old ones, wait
+                # a bit and retry:
+                if new_dates == old_dates:
+                    for i in range(10):
+                        logger.debug(f"Waiting for new week to be ready... ({i + 1})")
+                        time.sleep(0.1)
+                        new_dates = self._get_displayed_dates()
+                        if new_dates != old_dates:
+                            break
+
                 if not new_dates or new_dates == old_dates:
                     return False
                 return True

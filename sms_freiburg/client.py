@@ -35,8 +35,10 @@ class SMSFreiburgClient:
         # Normalize whitespaces
         return " ".join(text.split())
 
-    def _login(self, username: str, password: str):
-        logger.debug(f"Logging in as {username}")
+    def _login(self):
+        username = self.username
+        password = self.password
+        logger.debug(f"Logging in as [{username}]...")
         browser.element("#ID_USERNAME").should(be.visible).type(username)
         browser.element("#ID_PASSWORD").should(be.visible).type(password)
         browser.element("#ID_LOGIN").should(be.visible).click()
@@ -187,7 +189,7 @@ class SMSFreiburgClient:
         browser.config.window_height = 1080
         browser.open(URL)
 
-        self._login(self.username, self.password)
+        self._login()
         browser.element('a[title="Speiseplan"]').click()
         browser.element("table.Table_Standard").should(be.present)
 

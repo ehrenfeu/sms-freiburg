@@ -230,6 +230,11 @@ class SMSFreiburgClient:
         if headless:
             options.add_argument("--headless=new")
         browser.config.driver_options = options
+        # e.g. when operating via docker compose, selenium will run in its own
+        # container, in that case point the browser to the remote URL:
+        if remote_url := os.environ.get("SELENIUM_REMOTE_URL"):
+            browser.config.driver_remote_url = remote_url
+
         browser.config.window_width = 1920
         browser.config.window_height = 1080
         browser.open(URL)

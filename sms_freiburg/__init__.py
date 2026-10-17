@@ -1,12 +1,14 @@
 import argparse
 import json
-import logging
+
 import paho.mqtt.client as mqtt
 import sys
 import yaml
 from dataclasses import dataclass, fields
 from datetime import datetime
 from pathlib import Path
+
+from loguru import logger
 
 
 from .client import SMSFreiburgClient, LoginError
@@ -29,7 +31,7 @@ def load_config(path: Path, profile=""):
         with path.open() as f:
             configs = yaml.safe_load(f)
     except FileNotFoundError:
-        logger = logging.getLogger(__name__)
+        # logger = logging.getLogger(__name__)
         logger.info(
             f"Could not find config file at {path}, only using command line arguments."
         )
@@ -64,10 +66,10 @@ def parse_configuration():
     parser.add_argument("-v", "--verbose", help="verbose", action="store_true")
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(levelname)s: %(message)s",
-    )
+    # logging.basicConfig(
+    #     level=logging.DEBUG if args.verbose else logging.INFO,
+    #     format="%(levelname)s: %(message)s",
+    # )
 
     # parse config file
     values = load_config(args.config, args.profile)
@@ -96,7 +98,7 @@ def parse_configuration():
 def main():
     config = parse_configuration()
 
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
 
     logger.debug(f"Using {config}")
 

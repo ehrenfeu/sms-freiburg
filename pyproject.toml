@@ -4,7 +4,7 @@ dynamic = ["version"]
 description = "extracts information from sms-freiburg.de and shares it via MQTT"
 authors = [{ name = "Gabi Röger" }]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

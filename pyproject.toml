@@ -22,6 +22,9 @@ dependencies = [
 Issues = "https://github.com/roeger/sms-freiburg/issues"
 Repository = "https://github.com/roeger/sms-freiburg"
 
+[project.scripts]
+sms-freiburg = "sms_freiburg:main"
+
 [tool.setuptools.dynamic]
 version = { file = "VERSION" }
 

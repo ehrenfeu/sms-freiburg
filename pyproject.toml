@@ -12,6 +12,7 @@ classifiers = [
 license = "GPL-3.0-only"
 
 dependencies = [
+    "click>=8.5.0",
     "loguru>=0.7.3",
     "paho-mqtt==2.1.0",
     "PyYAML==6.0.3",
@@ -24,10 +25,8 @@ Issues = "https://github.com/roeger/sms-freiburg/issues"
 Repository = "https://github.com/roeger/sms-freiburg"
 
 [project.scripts]
-sms-freiburg = "sms_freiburg.__main__:main"
+sms-freiburg = "sms_freiburg.cli:main"
 
-[tool.setuptools.dynamic]
-version = { file = "VERSION" }
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]

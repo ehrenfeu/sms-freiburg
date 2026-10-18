@@ -1,10 +1,12 @@
+"""Client for interacting with the sms-freiburg.de portal."""
+
+import os
 import re
 import time
 
 from loguru import logger
-
+from selene import be, browser
 from selenium import webdriver
-from selene import browser, be
 from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException,
@@ -18,12 +20,25 @@ class LoginError(Exception):
 
 
 class SMSFreiburgClient:
+    """Client to interact with the sms-freiburg.de portal."""
+
     def __init__(self, username: str, password: str) -> None:
+        """Initialize the SMSFreiburgClient.
+
+        Parameters
+        ----------
+        username : str
+            The username for logging into the portal.
+        password : str
+            The password for logging into the portal.
+        """
         self.username = username
         self.password = password
 
     def _clean_description(self, text: str) -> str:
-        # remove allergy indicators
+        # remove allergy indicators (comma-separated sequence of uppercase
+        # letters optionally followed by digits, or digits alone, plus an
+        # optional trailing comma)
         text = re.sub(
             r"\b(?:[A-Z]\d*|\d+)(?:,\s*(?:[A-Z]\d*|\d+))*\b,?",
             "",
@@ -38,6 +53,8 @@ class SMSFreiburgClient:
         username = self.username
         password = self.password
         logger.debug(f"Logging in as [{username}]...")
+        browser.element("#ID_USERNAME").should(be.visible).clear()
+        browser.element("#ID_PASSWORD").should(be.visible).clear()
         browser.element("#ID_USERNAME").should(be.visible).type(username)
         browser.element("#ID_PASSWORD").should(be.visible).type(password)
         browser.element("#ID_LOGIN").should(be.visible).click()
@@ -57,7 +74,14 @@ class SMSFreiburgClient:
             message = browser.element("#LoginErrorMsg").locate().text
             logger.error(f"Login failed for {username}: {' '.join(message.split())}")
             raise LoginError(f"Login failed for user {username}")
+
         logger.info("Login successful.")
+
+    def _logout(self):
+        logout = browser.element('a[title="Abmelden"]')
+        logout.click()
+        browser.element("#ID_LoggedOut_Link").should(be.visible)
+        logger.info("Logged out successfully.")
 
     def _extract_meal_plan(self) -> dict[str, list]:
         result = {}
@@ -188,10 +212,23 @@ class SMSFreiburgClient:
             time.sleep(0.1)
         raise RuntimeError("Could not extract meal plan")
 
-    def get_data(self):
+    def get_data(self, headless: bool = True):
+        """Scrape data from the portal.
+
+        Parameters
+        ----------
+        headless : bool, optional
+            Whether to run the browser in headless mode, by default True.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the meal plan data for all weeks.
+        """
         logger.debug(f"Starting meal plan scrape from {URL}")
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new")
+        if headless:
+            options.add_argument("--headless=new")
         browser.config.driver_options = options
         browser.config.window_width = 1920
         browser.config.window_height = 1080
@@ -207,6 +244,8 @@ class SMSFreiburgClient:
             all_meals.update(self._extract_meal_plan_for_week())
             if not self._go_to_next_week():
                 break
-
         logger.info("Scrape finished.")
+
+        self._logout()
+
         return all_meals
